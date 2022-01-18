@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "name": "Debug Android",
+      "request": "attach",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}",
+      "platform": "android",
+      "sourceMaps": true
+    }
+  ]
+}
