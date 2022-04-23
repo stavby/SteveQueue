@@ -9,6 +9,8 @@ import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
 import Snackbar from 'react-native-snackbar';
 import { NoActiveDeviceError } from '../../code/errors/NoActiveDeviceError';
 import { isTokenUpToDate } from '../../code/apiUtils/Authentication';
+import { NotPremiumError } from '../../code/errors/NotPremiumError';
+import { GeneralError } from '../../code/errors/GeneralError';
 
 interface SteveQueueProps {
   tokenExpired: () => void;
@@ -28,11 +30,12 @@ export const SteveQueue = ({ tokenExpired }: SteveQueueProps) => {
     try {
       await go(searchTitle);
     } catch (error) {
-      if (!(error instanceof SongNotFoundError) && !(error instanceof NoActiveDeviceError)) {
+      const allowedErrors = [SongNotFoundError, NoActiveDeviceError, NotPremiumError, GeneralError];
+      if (!allowedErrors.some((errorType) => error instanceof errorType)) {
         throw error;
       }
 
-      showError(error.message);
+      showError((error as Error).message);
       success = false;
     }
     setIsSearching(false);
