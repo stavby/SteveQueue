@@ -85,12 +85,13 @@ const showSongAddedToQueue = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#121212',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
+    color: 'white',
   },
 });

@@ -11,7 +11,7 @@ export const LoadingAnimation = ({ isLoading, text }: LoadingAnimationProps) => 
     <>
       {isLoading && (
         <View style={styles.loading}>
-          <ActivityIndicator color={'#2196F3'} size={200} />
+          <ActivityIndicator color={'#3700B3'} size={200} />
           <Text style={styles.text}>{text}</Text>
         </View>
       )}

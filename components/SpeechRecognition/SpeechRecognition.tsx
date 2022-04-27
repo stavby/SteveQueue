@@ -32,7 +32,7 @@ export const SpeechRecognition = ({
 
   return (
     <View style={styles.button}>
-      <Button disabled={isEnabled} onPress={startSpeech} title={title}></Button>
+      <Button color='#3700B3' disabled={isEnabled} onPress={startSpeech} title={title}></Button>
     </View>
   );
 };
