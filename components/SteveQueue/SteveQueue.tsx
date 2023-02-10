@@ -61,7 +61,7 @@ export const SteveQueue = ({ tokenExpired }: SteveQueueProps) => {
         title='עברית'
         onInput={searchAndAdd}
         language={LANGUAGE.HEBREW}
-        speechMessage={'דבר אח שלי'}
+        speechMessage={'דבר.י אח.ות שלי'}
         isEnabled={isSearching}
       />
     </View>
