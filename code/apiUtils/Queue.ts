@@ -1,13 +1,14 @@
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
+import { PlaybackState, Queue } from '../../types';
 import { NoActiveDeviceError } from '../errors/NoActiveDeviceError';
 import { NotPremiumError } from '../errors/NotPremiumError';
 import { getToken } from './Authentication';
+import { pause, seek, skip } from './Player';
 import { API_URL } from './Urls';
 
 export const addSongToQueue = async (uri: string) => {
-  let addToQueueResponse: AxiosResponse;
   try {
-    addToQueueResponse = await axios.post(
+    await axios.post(
       `${API_URL}/v1/me/player/queue?uri=${uri}`,
       {},
       {
@@ -32,5 +33,74 @@ export const addSongToQueue = async (uri: string) => {
     } else {
       throw new Error('Error, please try again');
     }
+  }
+};
+
+export const moveSongToFront = async (songUri: string) => {
+  const queue = await getQueue();
+  const currentTrackState = await getCurrentTrackState();
+
+  const songIndex = queue.queue.findIndex((song) => song.uri === songUri);
+  const songInQueue = queue.queue.find((song) => song.uri === songUri);
+  if (!songInQueue) {
+    console.error('Song was not found in queue after addition');
+    throw new Error('Something went wrong, please try again.');
+  }
+  const queueUntilSong = [currentTrackState.item, songInQueue, ...queue.queue.slice(0, songIndex)];
+  if (queueUntilSong.length === 2) {
+    return;
+  }
+
+  for (const song of queueUntilSong) {
+    await addSongToQueue(song.uri);
+    skip();
+  }
+
+  if (!currentTrackState.is_playing) {
+    pause();
+  }
+  seek(currentTrackState.progress_ms);
+};
+
+const getQueue = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/v1/me/player/queue`, {
+      headers: {
+        Authorization: `Bearer ${await getToken()}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return res.data as Queue;
+  } catch (error) {
+    const errorText = 'Get queue request was not successful\n' + error;
+    if (!axios.isAxiosError(error)) {
+      console.error(errorText);
+    } else {
+      console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
+    }
+
+    throw new Error('Error, please try again');
+  }
+};
+
+const getCurrentTrackState = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/v1/me/player`, {
+      headers: {
+        Authorization: `Bearer ${await getToken()}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const { is_playing, progress_ms, item } = res.data;
+    return { is_playing, progress_ms, item } as PlaybackState;
+  } catch (error) {
+    const errorText = 'Get playback state request was not successful\n' + error;
+    if (!axios.isAxiosError(error)) {
+      console.error(errorText);
+    } else {
+      console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
+    }
+
+    throw new Error('Error, please try again');
   }
 };

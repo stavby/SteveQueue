@@ -11,7 +11,7 @@ import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
 
 const REDIRECT_URL = 'https://google.com';
 const REDIRECT_URL_FULL = 'https://www.google.com';
-const SPOTIFY_AUTH_URL = `${ACCOUNTS_API_URL}/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URL}&scope=user-modify-playback-state`;
+const SPOTIFY_AUTH_URL = `${ACCOUNTS_API_URL}/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URL}&scope=user-modify-playback-state user-read-playback-state`;
 
 interface AuthWebViewPros {
   onTokenResult: (tokenResult: TokenResult) => void;

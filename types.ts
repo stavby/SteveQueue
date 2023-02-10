@@ -21,3 +21,14 @@ export interface Song {
   id: string;
   uri: string;
 }
+
+export interface Queue {
+  currently_playing: Song;
+  queue: Song[];
+}
+
+export interface PlaybackState {
+  item: Song;
+  progress_ms: number;
+  is_playing: boolean;
+}
