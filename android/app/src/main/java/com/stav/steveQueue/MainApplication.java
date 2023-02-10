@@ -2,7 +2,6 @@ package com.stav.steveQueue;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.res.Configuration;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.PackageList;
@@ -16,9 +15,6 @@ import com.facebook.soloader.SoLoader;
 import com.stav.steveQueue.newarchitecture.MainApplicationReactNativeHost;
 import java.lang.reflect.InvocationTargetException;
 
-import expo.modules.ApplicationLifecycleDispatcher;
-import expo.modules.ReactNativeHostWrapper;
-
 import com.facebook.react.bridge.JSIModulePackage;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.azendoo.reactnativesnackbar.SnackbarPackage; 
@@ -29,9 +25,7 @@ import java.util.List;
 import com.facebook.react.config.ReactFeatureFlags;
 
 public class MainApplication extends Application implements ReactApplication {
-  private final ReactNativeHost mReactNativeHost = new ReactNativeHostWrapper(
-    this,
-    new ReactNativeHost(this) {
+  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
     @Override
     public boolean getUseDeveloperSupport() {
       return BuildConfig.DEBUG;
@@ -57,7 +51,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected JSIModulePackage getJSIModulePackage() {
       return new ReanimatedJSIModulePackage();
     }
-  });
+  };
 
   private final ReactNativeHost mNewArchitectureNativeHost =
       new MainApplicationReactNativeHost(this);
