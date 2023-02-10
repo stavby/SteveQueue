@@ -1,6 +1,6 @@
+// 20230203151253
+// https://raw.githubusercontent.com/react-native-community/rn-diff-purge/release/0.71.2/RnDiffApp/tsconfig.json
+
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true
-  }
+    "extends": "@tsconfig/react-native/tsconfig.json"
 }
