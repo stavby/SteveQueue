@@ -51,13 +51,15 @@ export const moveSongToFront = async (songUri: string) => {
     return;
   }
 
+  const skipRequests: Promise<void>[] = [];
   for (const song of queueUntilSong) {
     await addSongToQueue(song.uri);
-    skip();
+    skipRequests.push(skip());
   }
+  await Promise.all(skipRequests);
 
   if (!currentTrackState.is_playing) {
-    pause();
+    await pause();
   }
   seek(currentTrackState.progress_ms);
 };

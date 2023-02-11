@@ -34,7 +34,8 @@ export const SteveQueue = ({ tokenExpired }: SteveQueueProps) => {
     } catch (error) {
       const allowedErrors = [SongNotFoundError, NoActiveDeviceError, NotPremiumError, GeneralError];
       if (!allowedErrors.some((errorType) => error instanceof errorType)) {
-        throw error;
+        console.error(error);
+        showError('Something went wrong, please try again');
       }
 
       showError((error as Error).message);
