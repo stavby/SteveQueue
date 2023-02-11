@@ -1,6 +1,6 @@
 {
   "name": "stevequeue",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "scripts": {
     "start": "react-native run-android",
     "build": "cd android && gradlew bundleRelease"
