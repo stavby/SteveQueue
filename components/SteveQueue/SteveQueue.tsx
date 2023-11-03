@@ -1,29 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Snackbar from 'react-native-snackbar';
+import { Switch } from 'react-native-switch';
+import { isTokenUpToDate } from '../../code/apiUtils/Authentication';
 import { addSongToQueue, moveSongToFront } from '../../code/apiUtils/Queue';
 import { getSongUri } from '../../code/apiUtils/Search';
-import { SongNotFoundError } from '../../code/errors/SongNotFoundError';
+import { NotPremiumError, GeneralError, NoActiveDeviceError, SongNotFoundError } from '../../code/errors';
 import { SpeechRecognition } from '../../components/SpeechRecognition/SpeechRecognition';
 import { LANGUAGE } from '../../types';
 import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
-import Snackbar from 'react-native-snackbar';
-import { NoActiveDeviceError } from '../../code/errors/NoActiveDeviceError';
-import { isTokenUpToDate } from '../../code/apiUtils/Authentication';
-import { NotPremiumError } from '../../code/errors/NotPremiumError';
-import { GeneralError } from '../../code/errors/GeneralError';
-import { Switch } from 'react-native-switch';
 
-interface SteveQueueProps {
-  tokenExpired: () => void;
-}
+type SteveQueueProps = {
+  tokenExpired: (pendingRequest: string) => void;
+  resetCurrentRequest: () => void;
+  currentRequest?: string;
+};
 
-export const SteveQueue = ({ tokenExpired }: SteveQueueProps) => {
+export const SteveQueue = ({ tokenExpired, currentRequest, resetCurrentRequest }: SteveQueueProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [isPlayNext, setIsPlayNext] = useState(false);
+  useEffect(() => {
+    if (currentRequest) {
+      searchAndAdd(currentRequest);
+      resetCurrentRequest();
+    }
+  }, [currentRequest]);
 
   const searchAndAdd = async (searchTitle: string) => {
     if (!(await isTokenUpToDate())) {
-      tokenExpired();
+      tokenExpired(searchTitle);
       return;
     }
 
