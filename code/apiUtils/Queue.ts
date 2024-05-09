@@ -3,7 +3,7 @@ import { PlaybackState, Queue } from '../../types';
 import { NoActiveDeviceError } from '../errors/NoActiveDeviceError';
 import { NotPremiumError } from '../errors/NotPremiumError';
 import { getToken } from './Authentication';
-import { changeVolume, pause, seek, skip } from './Player';
+import { pause, seek, skip } from './Player';
 import { API_URL } from './Urls';
 
 export const addSongToQueue = async (uri: string) => {

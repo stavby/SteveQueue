@@ -65,21 +65,3 @@ export const seek = async (position: number) => {
     throwPlayerError(error as Error, errorText);
   }
 };
-
-export const changeVolume = async (volume_percent: number) => {
-  try {
-    await axios.put(
-      `${API_URL}/v1/me/player/volume?volume_percent=${volume_percent}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${await getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  } catch (error) {
-    const errorText = 'Change volume request was not successful\n' + error;
-    throwPlayerError(error as Error, errorText);
-  }
-};
