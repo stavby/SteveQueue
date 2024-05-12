@@ -62,15 +62,20 @@ export const SteveQueue = ({ tokenExpired, currentRequest, resetCurrentRequest }
         <Text style={styles.playNextText}>Play next?</Text>
         <Switch activeText='' inActiveText='' value={isPlayNext} onValueChange={toggleIsPlayNext} circleSize={30} />
       </View>
-      <Text style={styles.title}>Let's go!</Text>
-      <SpeechRecognition title='English' onInput={searchAndAdd} language={LANGUAGE.ENGLISH} isEnabled={isSearching} />
-      <SpeechRecognition
-        title='עברית'
-        onInput={searchAndAdd}
-        language={LANGUAGE.HEBREW}
-        speechMessage={'דבר.י אח.ות שלי'}
-        isEnabled={isSearching}
-      />
+      <Text style={styles.title}>Drive safe ;)</Text>
+        <SpeechRecognition
+          title='English'
+          onInput={searchAndAdd}
+          language={LANGUAGE.ENGLISH}
+          isEnabled={isSearching}
+          />
+        <SpeechRecognition
+          title='Hebrew'
+          onInput={searchAndAdd}
+          language={LANGUAGE.HEBREW}
+          speechMessage={'דבר.י אח.ות שלי'}
+          isEnabled={isSearching}
+          />
       <View style={styles.searchBar}>
         <CustomSearchBar handleSearch={searchAndAdd} />
       </View>
@@ -130,6 +135,6 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     position: 'absolute',
-    bottom: 40
+    bottom: 35
   }
 });
