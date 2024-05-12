@@ -5,10 +5,11 @@ import { Switch } from 'react-native-switch';
 import { isTokenUpToDate } from '../../code/apiUtils/Authentication';
 import { addSongToQueue, moveSongToFront } from '../../code/apiUtils/Queue';
 import { getSongUri } from '../../code/apiUtils/Search';
-import { NotPremiumError, GeneralError, NoActiveDeviceError, SongNotFoundError } from '../../code/errors';
+import { GeneralError, NoActiveDeviceError, NotPremiumError, SongNotFoundError } from '../../code/errors';
 import { SpeechRecognition } from '../../components/SpeechRecognition/SpeechRecognition';
 import { LANGUAGE } from '../../types';
 import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
+import CustomSearchBar from '../Utils/CustomSearchBar';
 
 type SteveQueueProps = {
   tokenExpired: (pendingRequest: string) => void;
@@ -70,6 +71,9 @@ export const SteveQueue = ({ tokenExpired, currentRequest, resetCurrentRequest }
         speechMessage={'דבר.י אח.ות שלי'}
         isEnabled={isSearching}
       />
+      <View style={styles.searchBar}>
+        <CustomSearchBar handleSearch={searchAndAdd} />
+      </View>
     </View>
   );
 };
@@ -124,4 +128,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginRight: 5,
   },
+  searchBar: {
+    position: 'absolute',
+    bottom: 40
+  }
 });
