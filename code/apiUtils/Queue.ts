@@ -51,17 +51,20 @@ export const moveSongToFront = async (songUri: string) => {
     return;
   }
 
-  const skipRequests: Promise<void>[] = [];
-  for (const song of queueUntilSong) {
-    await addSongToQueue(song.uri);
-    skipRequests.push(skip());
-  }
-  await Promise.all(skipRequests);
-
-  if (!currentTrackState.is_playing) {
+  if (currentTrackState.is_playing) {
     await pause();
   }
-  seek(currentTrackState.progress_ms);
+
+  for(const [index, song] of queueUntilSong.entries()) {
+    await addSongToQueue(song.uri);
+    await skip();
+    if (index !== queueUntilSong.length - 1) {
+      await pause();
+    } else {
+      !currentTrackState.is_playing && await pause();
+    }
+  }
+  currentTrackState.progress_ms && await seek(currentTrackState.progress_ms);
 };
 
 const getQueue = async () => {
@@ -85,7 +88,7 @@ const getQueue = async () => {
   }
 };
 
-const getCurrentTrackState = async () => {
+const getCurrentTrackState = async (): Promise<PlaybackState> => {
   try {
     const res = await axios.get(`${API_URL}/v1/me/player`, {
       headers: {
@@ -93,8 +96,8 @@ const getCurrentTrackState = async () => {
         'Content-Type': 'application/json',
       },
     });
-    const { is_playing, progress_ms, item } = res.data;
-    return { is_playing, progress_ms, item } as PlaybackState;
+    const { is_playing, progress_ms, item, device } = res.data;
+    return { is_playing, progress_ms, item, device };
   } catch (error) {
     const errorText = 'Get playback state request was not successful\n' + error;
     if (!axios.isAxiosError(error)) {
