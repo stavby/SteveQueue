@@ -2,6 +2,16 @@ import axios from 'axios';
 import { getToken } from './Authentication';
 import { API_URL } from './Urls';
 
+const throwPlayerError = (error: Error, message: string) => {
+  if (!axios.isAxiosError(error)) {
+    console.error(message);
+  } else {
+    console.error(message + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
+  }
+
+  throw new Error('Error, please try again');
+}
+
 export const skip = async () => {
   try {
     await axios.post(
@@ -16,13 +26,7 @@ export const skip = async () => {
     );
   } catch (error) {
     const errorText = 'Skip request was not successful\n' + error;
-    if (!axios.isAxiosError(error)) {
-      console.error(errorText);
-    } else {
-      console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
-    }
-
-    throw new Error('Error, please try again');
+    throwPlayerError(error as Error, errorText);
   }
 };
 
@@ -40,13 +44,7 @@ export const pause = async () => {
     );
   } catch (error) {
     const errorText = 'Pause request was not successful\n' + error;
-    if (!axios.isAxiosError(error)) {
-      console.error(errorText);
-    } else {
-      console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
-    }
-
-    throw new Error('Error, please try again');
+    throwPlayerError(error as Error, errorText);
   }
 };
 
@@ -64,12 +62,6 @@ export const seek = async (position: number) => {
     );
   } catch (error) {
     const errorText = 'Seek request was not successful\n' + error;
-    if (!axios.isAxiosError(error)) {
-      console.error(errorText);
-    } else {
-      console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
-    }
-
-    throw new Error('Error, please try again');
+    throwPlayerError(error as Error, errorText);
   }
 };
