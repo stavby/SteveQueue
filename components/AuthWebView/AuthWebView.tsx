@@ -39,7 +39,6 @@ export const AuthWebView = ({ onTokenResult }: AuthWebViewPros) => {
             duration: Snackbar.LENGTH_LONG,
             backgroundColor: 'red',
           });
-
           return;
         }
 
@@ -56,6 +55,7 @@ export const AuthWebView = ({ onTokenResult }: AuthWebViewPros) => {
         source={{ uri: url }}
         onLoad={handleLoad}
         userAgent='Mozilla/5.0 (Linux; Android 10; SM-A205U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36'
+        style={{ display: isLoading ? 'none' : 'flex' }}
       />
       <LoadingAnimation isLoading={isLoading} text='Loading ... :)' />
     </View>
