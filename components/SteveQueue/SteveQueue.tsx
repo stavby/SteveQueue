@@ -5,10 +5,11 @@ import { Switch } from 'react-native-switch';
 import { isTokenUpToDate } from '../../code/apiUtils/Authentication';
 import { addSongToQueue, moveSongToFront } from '../../code/apiUtils/Queue';
 import { getSongUri } from '../../code/apiUtils/Search';
-import { NotPremiumError, GeneralError, NoActiveDeviceError, SongNotFoundError } from '../../code/errors';
+import { GeneralError, NoActiveDeviceError, NotPremiumError, SongNotFoundError } from '../../code/errors';
 import { SpeechRecognition } from '../../components/SpeechRecognition/SpeechRecognition';
 import { LANGUAGE } from '../../types';
 import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
+import CustomSearchBar from '../Utils/CustomSearchBar';
 
 type SteveQueueProps = {
   tokenExpired: (pendingRequest: string) => void;
@@ -61,15 +62,23 @@ export const SteveQueue = ({ tokenExpired, currentRequest, resetCurrentRequest }
         <Text style={styles.playNextText}>Play next?</Text>
         <Switch activeText='' inActiveText='' value={isPlayNext} onValueChange={toggleIsPlayNext} circleSize={30} />
       </View>
-      <Text style={styles.title}>Let's go!</Text>
-      <SpeechRecognition title='English' onInput={searchAndAdd} language={LANGUAGE.ENGLISH} isEnabled={isSearching} />
-      <SpeechRecognition
-        title='עברית'
-        onInput={searchAndAdd}
-        language={LANGUAGE.HEBREW}
-        speechMessage={'דבר.י אח.ות שלי'}
-        isEnabled={isSearching}
-      />
+      <Text style={styles.title}>Drive safe ;)</Text>
+        <SpeechRecognition
+          title='English'
+          onInput={searchAndAdd}
+          language={LANGUAGE.ENGLISH}
+          isEnabled={isSearching}
+          />
+        <SpeechRecognition
+          title='Hebrew'
+          onInput={searchAndAdd}
+          language={LANGUAGE.HEBREW}
+          speechMessage={'דבר.י אח.ות שלי'}
+          isEnabled={isSearching}
+          />
+      <View style={styles.searchBar}>
+        <CustomSearchBar handleSearch={searchAndAdd} />
+      </View>
     </View>
   );
 };
@@ -124,4 +133,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginRight: 5,
   },
+  searchBar: {
+    position: 'absolute',
+    bottom: 35
+  }
 });

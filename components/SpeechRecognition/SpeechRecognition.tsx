@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, PermissionsAndroid, View, StyleSheet } from 'react-native';
+import { PermissionsAndroid, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import SpeechAndroid from 'react-native-android-voice';
 import { LANGUAGE } from '../../types';
 
@@ -31,9 +31,9 @@ export const SpeechRecognition = ({
   };
 
   return (
-    <View style={styles.button}>
-      <Button color='#3700B3' disabled={isEnabled} onPress={startSpeech} title={title}></Button>
-    </View>
+    <TouchableOpacity style={styles.button} onPress={startSpeech} disabled={isEnabled}>
+      <Text style={styles.buttonText}>{title}</Text>
+    </TouchableOpacity>
   );
 };
 
@@ -47,6 +47,16 @@ const requestMicrophonePermission = async () => {
 
 const styles = StyleSheet.create({
   button: {
-    marginVertical: 5,
+    marginVertical: 8,
+    backgroundColor: '#3700B3',
+    paddingVertical: 50,
+    paddingHorizontal: 100,
+    width: 300,
+    borderRadius: 10,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
   },
 });
