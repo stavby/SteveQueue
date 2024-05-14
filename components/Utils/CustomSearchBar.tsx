@@ -7,7 +7,7 @@ const SEARCH_ICON_SIZE = 28;
 const CLOSE_ICON_SIZE = 23;
 
 type CustomSearchBarProps = {
-  handleSearch: (text: string) => Promise<void>
+  handleSearch: (text: string) => Promise<void>;
 };
 
 const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {
@@ -17,24 +17,20 @@ const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {
   const onSearch = () => {
     Keyboard.dismiss();
 
-    if(searchText) {
+    if (searchText) {
       handleSearch(searchText);
       setSearchText('');
+      setIsClicked(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.searchBar,
-          isClicked && styles.clickedSearchBar
-        ]}
-      >
+      <View style={[styles.searchBar, isClicked && styles.clickedSearchBar]}>
         <SearchIcon
           title='search'
           color='black'
-          onPress={onSearch}  
+          onPress={onSearch}
           width={SEARCH_ICON_SIZE}
           height={SEARCH_ICON_SIZE}
         />
@@ -44,27 +40,28 @@ const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {
           value={searchText}
           onChangeText={setSearchText}
           onFocus={() => setIsClicked(true)}
+          onSubmitEditing={onSearch}
         />
         {isClicked && (
-            <CloseIcon
-              onPress={() => setSearchText('')}
-              title='close'
-              color='black'
-              width={CLOSE_ICON_SIZE}
-              height={CLOSE_ICON_SIZE}
-            />
-        )}  
+          <CloseIcon
+            onPress={() => setSearchText('')}
+            title='close'
+            color='black'
+            width={CLOSE_ICON_SIZE}
+            height={CLOSE_ICON_SIZE}
+          />
+        )}
       </View>
       {isClicked && (
-          <Button
-            title='CANCEL'
-            color='#121212'
-            onPress={() => {
-              Keyboard.dismiss();
-              setSearchText('');
-              setIsClicked(false);
-            }}
-          />
+        <Button
+          title='CANCEL'
+          color='#121212'
+          onPress={() => {
+            Keyboard.dismiss();
+            setSearchText('');
+            setIsClicked(false);
+          }}
+        />
       )}
     </View>
   );
