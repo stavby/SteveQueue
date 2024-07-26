@@ -10,7 +10,7 @@ type CustomSearchBarProps = {
   handleSearch: (text: string) => void;
 };
 
-const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {
+export const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
 
@@ -66,8 +66,6 @@ const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {
     </View>
   );
 };
-
-export default CustomSearchBar;
 
 const styles = StyleSheet.create({
   container: {

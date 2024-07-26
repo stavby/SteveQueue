@@ -9,7 +9,13 @@ export const Main = () => {
 
   return (
     <>
-      <AuthWebView onTokenResult={authenticate} isAuthenticating={isAuthenticating} setIsFirstLogin={setIsFirstLogin} />
+      {isAuthenticating && (
+        <AuthWebView
+          onTokenResult={authenticate}
+          isAuthenticating={isAuthenticating}
+          setIsFirstLogin={setIsFirstLogin}
+        />
+      )}
       {!isFirstLogin && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating} />}
     </>
   );

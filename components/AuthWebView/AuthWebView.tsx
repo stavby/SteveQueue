@@ -27,12 +27,6 @@ export const AuthWebView = ({ onTokenResult, isAuthenticating, setIsFirstLogin }
     setIsFirstLogin(isLoggingIn);
   }, [isLoggingIn]);
 
-  useEffect(() => {
-    if (isAuthenticating) {
-      setUrl(SPOTIFY_AUTH_URL);
-    }
-  }, [isAuthenticating]);
-
   const handleLoad = (syntheticEvent: WebViewNavigationEvent) => {
     const { nativeEvent } = syntheticEvent;
 
@@ -89,5 +83,5 @@ const hashToObject = (hash: string) =>
         ...object,
         [item.substring(0, item.indexOf('='))]: item.substring(item.indexOf('=') + 1),
       }),
-      {}
+      {},
     );

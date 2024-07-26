@@ -9,7 +9,7 @@ import { GeneralError, NoActiveDeviceError, NotPremiumError, SongNotFoundError }
 import { SpeechRecognition } from '../../components/SpeechRecognition/SpeechRecognition';
 import { LANGUAGE } from '../../types';
 import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
-import CustomSearchBar from '../Utils/CustomSearchBar';
+import { CustomSearchBar } from '../Utils/CustomSearchBar';
 
 type SteveQueueProps = {
   tokenExpired: (pendingRequest: string) => void;

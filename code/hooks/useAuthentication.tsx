@@ -14,7 +14,6 @@ export const useAuthentication = () => {
   }, []);
 
   const authenticate = async (tokenResult: TokenResult) => {
-    setIsAuthenticating(true);
     await updateToken(tokenResult);
     setIsAuthenticating(false);
   };
