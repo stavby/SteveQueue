@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TokenResult } from '../../types';
 
 export const CLIENT_ID = '7cb51e6ec07847b6ac9ecd0a3f2ee49f';
