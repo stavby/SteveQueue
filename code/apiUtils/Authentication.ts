@@ -14,7 +14,7 @@ export const updateToken = async (tokenResult: TokenResult) => {
   ]);
 };
 
-export const isTokenUpToDate = async () => {
+export const getIsTokenUpToDate = async () => {
   const expiresIn = await AsyncStorage.getItem('@SteveQueue:token_expiresIn');
 
   return !!expiresIn && parseInt(expiresIn) > new Date().valueOf();

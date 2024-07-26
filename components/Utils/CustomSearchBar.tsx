@@ -7,7 +7,7 @@ const SEARCH_ICON_SIZE = 28;
 const CLOSE_ICON_SIZE = 23;
 
 type CustomSearchBarProps = {
-  handleSearch: (text: string) => Promise<void>;
+  handleSearch: (text: string) => void;
 };
 
 const CustomSearchBar = ({ handleSearch }: CustomSearchBarProps) => {

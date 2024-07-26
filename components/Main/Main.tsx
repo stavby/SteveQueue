@@ -1,34 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { isTokenUpToDate, updateToken } from '../../code/apiUtils/Authentication';
-import { TokenResult } from '../../types';
+import React, { useState } from 'react';
+import { useAuthentication } from '../../code/hooks/useAuthentication';
 import { AuthWebView } from '../AuthWebView/AuthWebView';
 import { SteveQueue } from '../SteveQueue/SteveQueue';
 
 export const Main = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pendingRequest, setPendingRequest] = useState<string>();
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const { tokenExpired, isAuthenticating, authenticate } = useAuthentication();
 
-  useEffect(() => {
-    updateAuthenticationStatus();
-  }, []);
-
-  const updateAuthenticationStatus = async () => setIsAuthenticated(await isTokenUpToDate());
-  const authenticate = async (tokenResult: TokenResult) => {
-    await updateToken(tokenResult);
-    setIsAuthenticated(true);
-  };
-  const tokenExpired = (pendingRequest: string) => {
-    setPendingRequest(pendingRequest);
-    setIsAuthenticated(false);
-  };
-
-  return isAuthenticated ? (
-    <SteveQueue
-      tokenExpired={tokenExpired}
-      currentRequest={pendingRequest}
-      resetCurrentRequest={() => setPendingRequest(undefined)}
-    />
-  ) : (
-    <AuthWebView onTokenResult={authenticate} />
+  return (
+    <>
+      <AuthWebView onTokenResult={authenticate} isAuthenticating={isAuthenticating} setIsFirstLogin={setIsFirstLogin} />
+      {!isFirstLogin && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating} />}
+    </>
   );
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { Switch } from 'react-native-switch';
-import { isTokenUpToDate } from '../../code/apiUtils/Authentication';
+import { getIsTokenUpToDate } from '../../code/apiUtils/Authentication';
 import { addSongToQueue, moveSongToFront } from '../../code/apiUtils/Queue';
 import { getSongUri } from '../../code/apiUtils/Search';
 import { GeneralError, NoActiveDeviceError, NotPremiumError, SongNotFoundError } from '../../code/errors';
@@ -13,28 +13,22 @@ import CustomSearchBar from '../Utils/CustomSearchBar';
 
 type SteveQueueProps = {
   tokenExpired: (pendingRequest: string) => void;
-  resetCurrentRequest: () => void;
-  currentRequest?: string;
+  isAuthenticating: boolean;
 };
 
-export const SteveQueue = ({ tokenExpired, currentRequest, resetCurrentRequest }: SteveQueueProps) => {
-  const [isSearching, setIsSearching] = useState(false);
+export const SteveQueue = ({ tokenExpired, isAuthenticating }: SteveQueueProps) => {
+  const [requestedSong, setRequestedSong] = useState<string>();
   const [isPlayNext, setIsPlayNext] = useState(false);
-  useEffect(() => {
-    if (currentRequest) {
-      searchAndAdd(currentRequest);
-      resetCurrentRequest();
-    }
-  }, [currentRequest]);
 
   const searchAndAdd = async (searchTitle: string) => {
-    if (!(await isTokenUpToDate())) {
-      tokenExpired(searchTitle);
+    if (!(await getIsTokenUpToDate())) {
+      if (!isAuthenticating) {
+        tokenExpired(searchTitle);
+      }
       return;
     }
 
     let success = true;
-    setIsSearching(true);
     try {
       await go(searchTitle, isPlayNext);
     } catch (error) {
@@ -47,37 +41,46 @@ export const SteveQueue = ({ tokenExpired, currentRequest, resetCurrentRequest }
       showError((error as Error).message);
       success = false;
     }
-    setIsSearching(false);
+
+    setRequestedSong(undefined);
     if (success) {
       showSongAddedToQueue();
     }
   };
 
+  useEffect(() => {
+    if (!requestedSong) {
+      return;
+    }
+
+    searchAndAdd(requestedSong);
+  }, [requestedSong, isAuthenticating]);
+
   const toggleIsPlayNext = () => setIsPlayNext(!isPlayNext);
 
   return (
     <View style={styles.container}>
-      <LoadingAnimation isLoading={isSearching} text='Loading ... :)' />
+      <LoadingAnimation isLoading={Boolean(requestedSong)} text='Loading ... :)' />
       <View style={styles.playNextSwitch}>
         <Text style={styles.playNextText}>Play next?</Text>
         <Switch activeText='' inActiveText='' value={isPlayNext} onValueChange={toggleIsPlayNext} circleSize={30} />
       </View>
       <Text style={styles.title}>Drive safe ;)</Text>
-        <SpeechRecognition
-          title='English'
-          onInput={searchAndAdd}
-          language={LANGUAGE.ENGLISH}
-          isEnabled={isSearching}
-          />
-        <SpeechRecognition
-          title='Hebrew'
-          onInput={searchAndAdd}
-          language={LANGUAGE.HEBREW}
-          speechMessage={'דבר.י אח.ות שלי'}
-          isEnabled={isSearching}
-          />
+      <SpeechRecognition
+        title='English'
+        onInput={setRequestedSong}
+        language={LANGUAGE.ENGLISH}
+        isEnabled={Boolean(requestedSong)}
+      />
+      <SpeechRecognition
+        title='Hebrew'
+        onInput={setRequestedSong}
+        language={LANGUAGE.HEBREW}
+        speechMessage={'דבר.י אח.ות שלי'}
+        isEnabled={Boolean(requestedSong)}
+      />
       <View style={styles.searchBar}>
-        <CustomSearchBar handleSearch={searchAndAdd} />
+        <CustomSearchBar handleSearch={setRequestedSong} />
       </View>
     </View>
   );
@@ -135,6 +138,6 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     position: 'absolute',
-    bottom: 35
-  }
+    bottom: 35,
+  },
 });

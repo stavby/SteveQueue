@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import WebView from 'react-native-webview';
 import { StyleSheet, View } from 'react-native';
 import { CLIENT_ID } from '../../code/apiUtils/Authentication';
 import { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes';
-import { URL } from 'react-native-url-polyfill';
 import { TokenResult } from '../../types';
 import { ACCOUNTS_API_URL } from '../../code/apiUtils/Urls';
 import Snackbar from 'react-native-snackbar';
@@ -15,11 +14,24 @@ const SPOTIFY_AUTH_URL = `${ACCOUNTS_API_URL}/authorize?client_id=${CLIENT_ID}&r
 
 interface AuthWebViewPros {
   onTokenResult: (tokenResult: TokenResult) => void;
+  isAuthenticating: boolean;
+  setIsFirstLogin: (isFirstLogin: boolean) => void;
 }
 
-export const AuthWebView = ({ onTokenResult }: AuthWebViewPros) => {
+export const AuthWebView = ({ onTokenResult, isAuthenticating, setIsFirstLogin }: AuthWebViewPros) => {
   const [url, setUrl] = useState(SPOTIFY_AUTH_URL);
   const [isLoading, setIsLoading] = useState(true);
+  const isLoggingIn = new RegExp(`^${ACCOUNTS_API_URL}\/[a-z]{2}\/login`).test(url);
+
+  useEffect(() => {
+    setIsFirstLogin(isLoggingIn);
+  }, [isLoggingIn]);
+
+  useEffect(() => {
+    if (isAuthenticating) {
+      setUrl(SPOTIFY_AUTH_URL);
+    }
+  }, [isAuthenticating]);
 
   const handleLoad = (syntheticEvent: WebViewNavigationEvent) => {
     const { nativeEvent } = syntheticEvent;
@@ -50,7 +62,7 @@ export const AuthWebView = ({ onTokenResult }: AuthWebViewPros) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={{ ...styles.container, display: isLoggingIn ? 'flex' : 'none' }}>
       <WebView
         source={{ uri: url }}
         onLoad={handleLoad}
