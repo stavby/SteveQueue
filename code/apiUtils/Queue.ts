@@ -16,7 +16,7 @@ export const addSongToQueue = async (uri: string) => {
           Authorization: `Bearer ${await getToken()}`,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
   } catch (error) {
     const errorText = 'Add to queue request was not successful\n' + error;
@@ -36,6 +36,12 @@ export const addSongToQueue = async (uri: string) => {
   }
 };
 
+/*
+  Why do we move a certain song to front and not just take the last song in queue (for the play next feature)?
+  In Spoopify's API, the actual queue and the next songs in the playlist are part of the same queue, so the last song
+  in the queue that we get is the last song in the playlist, and we don't want to add the whole playlist to the queue...
+  So we assume that the specifed song as the last in the (actual) queue, and then move it to front!
+*/
 export const moveSongToFront = async (songUri: string) => {
   const queue = await getQueue();
   const currentTrackState = await getCurrentTrackState();
@@ -55,16 +61,18 @@ export const moveSongToFront = async (songUri: string) => {
     await pause();
   }
 
-  for(const [index, song] of queueUntilSong.entries()) {
+  for (const song of queueUntilSong) {
     await addSongToQueue(song.uri);
-    await skip();
-    if (index !== queueUntilSong.length - 1) {
-      await pause();
-    } else {
-      !currentTrackState.is_playing && await pause();
-    }
   }
-  currentTrackState.progress_ms && await seek(currentTrackState.progress_ms);
+
+  const skipRequests: Promise<void>[] = [];
+  for (const _ of queueUntilSong) {
+    skipRequests.push(skip());
+  }
+  await Promise.all(skipRequests); // skip order is not important so they can all be sent at the same time
+
+  !currentTrackState.is_playing && (await pause());
+  currentTrackState.progress_ms && (await seek(currentTrackState.progress_ms));
 };
 
 const getQueue = async () => {
