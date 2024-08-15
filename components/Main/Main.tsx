@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthentication } from '../../code/hooks/useAuthentication';
 import { AuthWebView } from '../AuthWebView/AuthWebView';
 import { SteveQueue } from '../SteveQueue/SteveQueue';
+import { getToken } from '../../code/apiUtils/Authentication';
 
 export const Main = () => {
-  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const { tokenExpired, isAuthenticating, authenticate } = useAuthentication();
+
+  useEffect(() => {
+    getToken().then((tokenResult) => setIsLoggedIn(Boolean(tokenResult)));
+  }, []);
 
   return (
     <>
@@ -13,10 +18,11 @@ export const Main = () => {
         <AuthWebView
           onTokenResult={authenticate}
           isAuthenticating={isAuthenticating}
-          setIsFirstLogin={setIsFirstLogin}
+          setIsLoggedIn={setIsLoggedIn}
+          isLoggedIn={isLoggedIn}
         />
       )}
-      {!isFirstLogin && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating} />}
+      {isLoggedIn && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating} />}
     </>
   );
 };
