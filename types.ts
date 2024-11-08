@@ -4,8 +4,8 @@ export interface TokenResult {
 }
 
 export enum LANGUAGE {
-  HEBREW = 'HEBREW',
-  ENGLISH = 'ENGLISH',
+  HEBREW = 'he-IL',
+  ENGLISH = 'en-US',
 }
 
 export interface SearchResults {

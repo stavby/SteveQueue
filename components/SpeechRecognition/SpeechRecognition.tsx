@@ -24,7 +24,7 @@ export const SpeechRecognition = ({
 
   const startSpeech = async () => {
     try {
-      onInput(await SpeechAndroid.startSpeech(speechMessage, SpeechAndroid[language]));
+      onInput(await SpeechAndroid.startSpeech(speechMessage, language));
     } catch (error) {
       console.warn(error);
     }
