@@ -2,35 +2,30 @@ import axios from 'axios';
 import { PlaybackState, Queue } from '../../types';
 import { NoActiveDeviceError } from '../errors/NoActiveDeviceError';
 import { NotPremiumError } from '../errors/NotPremiumError';
-import { getToken } from './Authentication';
+import { getAuthorizationHeader } from './General';
 import { pause, seek, skip } from './Player';
 import { API_URL } from './Urls';
+import { log } from '../utils/logger';
 
 export const addSongToQueue = async (uri: string) => {
   try {
-    await axios.post(
-      `${API_URL}/v1/me/player/queue?uri=${uri}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${await getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    await axios.post(`${API_URL}/v1/me/player/queue?uri=${uri}`, {}, await getAuthorizationHeader());
   } catch (error) {
     const errorText = 'Add to queue request was not successful\n' + error;
     if (!axios.isAxiosError(error)) {
       console.error(errorText);
+      log(errorText);
       throw new Error('Error, please try again');
     }
 
-    console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
+    const errorLog = errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data');
+    console.error(errorLog);
     if ('NO_ACTIVE_DEVICE' === error.response?.data?.error?.reason) {
       throw new NoActiveDeviceError();
     } else if ('PREMIUM_REQUIRED' === error.response?.data?.error?.reason) {
       throw new NotPremiumError();
     } else {
+      log(errorLog);
       throw new Error('Error, please try again');
     }
   }
@@ -65,10 +60,7 @@ export const moveSongToFront = async (songUri: string) => {
     await addSongToQueue(song.uri);
   }
 
-  const skipRequests: Promise<void>[] = [];
-  for (const _ of queueUntilSong) {
-    skipRequests.push(skip());
-  }
+  const skipRequests: Promise<void>[] = queueUntilSong.map(skip);
   await Promise.all(skipRequests); // skip order is not important so they can all be sent at the same time
 
   !currentTrackState.is_playing && (await pause());
@@ -77,12 +69,7 @@ export const moveSongToFront = async (songUri: string) => {
 
 const getQueue = async () => {
   try {
-    const res = await axios.get(`${API_URL}/v1/me/player/queue`, {
-      headers: {
-        Authorization: `Bearer ${await getToken()}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const res = await axios.get(`${API_URL}/v1/me/player/queue`, await getAuthorizationHeader());
     return res.data as Queue;
   } catch (error) {
     const errorText = 'Get queue request was not successful\n' + error;
@@ -98,12 +85,7 @@ const getQueue = async () => {
 
 const getCurrentTrackState = async (): Promise<PlaybackState> => {
   try {
-    const res = await axios.get(`${API_URL}/v1/me/player`, {
-      headers: {
-        Authorization: `Bearer ${await getToken()}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const res = await axios.get(`${API_URL}/v1/me/player`, await getAuthorizationHeader());
     const { is_playing, progress_ms, item, device } = res.data;
     return { is_playing, progress_ms, item, device };
   } catch (error) {

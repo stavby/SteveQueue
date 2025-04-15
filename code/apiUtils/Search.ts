@@ -1,18 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import { SearchResults } from '../../types';
 import { SongNotFoundError } from '../errors/SongNotFoundError';
-import { getToken } from './Authentication';
+import { getAuthorizationHeader } from './General';
 import { API_URL } from './Urls';
 
 export const getSongUri = async (name: string) => {
   let searchResponse: AxiosResponse;
   try {
-    searchResponse = await axios.get(`${API_URL}/v1/search?type=track&q=${name}`, {
-      headers: {
-        Authorization: `Bearer ${await getToken()}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    searchResponse = await axios.get(`${API_URL}/v1/search?type=track&q=${name}`, await getAuthorizationHeader());
   } catch (error) {
     if (!axios.isAxiosError(error)) {
       throw error;
