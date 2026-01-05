@@ -1,6 +1,11 @@
 export interface TokenResult {
   access_token: string;
   expires_in: number;
+  refresh_token: string;
+}
+
+export interface CodeResult {
+  code: string;
 }
 
 export enum LANGUAGE {

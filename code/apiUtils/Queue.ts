@@ -78,7 +78,7 @@ const getQueue = async () => {
     } else {
       console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
     }
-
+    log(errorText);
     throw new Error('Error, please try again');
   }
 };
@@ -96,6 +96,7 @@ const getCurrentTrackState = async (): Promise<PlaybackState> => {
       console.error(errorText + '\n' + JSON.stringify(error.response?.data ?? 'no data'));
     }
 
+    log(errorText);
     throw new Error('Error, please try again');
   }
 };

@@ -1,34 +1,36 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import WebView from 'react-native-webview';
 import { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes';
-import { CLIENT_ID } from '../../code/apiUtils/Authentication';
-import { ACCOUNTS_API_URL } from '../../code/apiUtils/Urls';
-import { TokenResult } from '../../types';
-import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
 import BackIcon from '../../assets/back.svg';
+import { CLIENT_ID, generateCodeChallenge, generateCodeVerifier } from '../../code/apiUtils/Authentication';
+import { ACCOUNTS_API_URL, REDIRECT_URL } from '../../code/apiUtils/Urls';
+import { log } from '../../code/utils/logger';
+import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
 
-const REDIRECT_URL = 'http://www.blankwebsite.com'; // Just chose a site that will take the least amount of time to load
-const SPOTIFY_AUTH_URL = `${ACCOUNTS_API_URL}/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URL}&scope=user-modify-playback-state user-read-playback-state`;
+const SPOTIFY_AUTH_URL = `${ACCOUNTS_API_URL}/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URL}&scope=user-modify-playback-state user-read-playback-state`;
 
 const SIDE_ICON_SIZE = 25;
 const ICON_MARGIN = 5;
 const ICON_BORDER_SIZE = 2;
 const SIDE_DUMMY_SIZE = SIDE_ICON_SIZE + ICON_MARGIN * 2 + ICON_BORDER_SIZE * 2;
 
+const getSpotifyAuthUrl = (codeVerifier: string) =>
+  `${SPOTIFY_AUTH_URL}&code_challenge=${generateCodeChallenge(codeVerifier)}&code_challenge_method=S256`;
+
 interface AuthWebViewPros {
-  onTokenResult: (tokenResult: TokenResult) => void;
-  isAuthenticating: boolean;
+  onCodeResult: (code: string, codeVerifier: string) => void;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   isLoggedIn: boolean;
 }
 
-export const AuthWebView = ({ onTokenResult, setIsLoggedIn, isLoggedIn }: AuthWebViewPros) => {
+export const AuthWebView = ({ onCodeResult, setIsLoggedIn, isLoggedIn }: AuthWebViewPros) => {
   const webView = useRef<WebView>(null);
-  const [url, setUrl] = useState(SPOTIFY_AUTH_URL);
+  const codeVerifier = useMemo(() => generateCodeVerifier(), []);
+  const [url, setUrl] = useState(getSpotifyAuthUrl(codeVerifier));
   const [isLoading, setIsLoading] = useState(true);
-  const isLoggingIn = useMemo(() => new RegExp(`^${ACCOUNTS_API_URL}\/[a-z]{2}\/login`).test(url), [url]);
+  const isLoggingIn = useMemo(() => new RegExp(`^${ACCOUNTS_API_URL}\/[a-z]{2}\/authorize`).test(url), [url]);
 
   useEffect(() => {
     if (isLoggingIn) {
@@ -43,10 +45,10 @@ export const AuthWebView = ({ onTokenResult, setIsLoggedIn, isLoggedIn }: AuthWe
     const url = new URL(nativeEvent.url);
     if (url.origin === REDIRECT_URL) {
       setIsLoading(true);
-      const tokenResult = hashToObject(url.hash) as TokenResult;
+      const codeResult = url.searchParams.get('code');
 
-      if (!tokenResult.access_token) {
-        console.error('Access token was not returned: ' + nativeEvent.url);
+      if (!codeResult) {
+        log('Authentication code was not returned: ' + nativeEvent.url);
         setUrl(SPOTIFY_AUTH_URL);
         Snackbar.show({
           text: 'Something went wrong, please try again :(',
@@ -58,7 +60,7 @@ export const AuthWebView = ({ onTokenResult, setIsLoggedIn, isLoggedIn }: AuthWe
 
       setIsLoading(false);
       setIsLoggedIn(true);
-      onTokenResult(tokenResult);
+      onCodeResult(codeResult, codeVerifier);
     } else {
       setIsLoading(nativeEvent.loading);
     }

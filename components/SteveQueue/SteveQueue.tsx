@@ -10,9 +10,10 @@ import { SpeechRecognition } from '../../components/SpeechRecognition/SpeechReco
 import { LANGUAGE } from '../../types';
 import { LoadingAnimation } from '../LoadingAnimation/LoadingAnimation';
 import { CustomSearchBar } from '../Utils/CustomSearchBar';
+import { log } from '../../code/utils/logger';
 
 type SteveQueueProps = {
-  tokenExpired: (pendingRequest: string) => void;
+  tokenExpired: () => void;
   isAuthenticating: boolean;
 };
 
@@ -23,7 +24,7 @@ export const SteveQueue = ({ tokenExpired, isAuthenticating }: SteveQueueProps) 
   const searchAndAdd = async (searchTitle: string) => {
     if (!(await getIsTokenUpToDate())) {
       if (!isAuthenticating) {
-        tokenExpired(searchTitle);
+        tokenExpired();
       }
       return;
     }
@@ -38,6 +39,7 @@ export const SteveQueue = ({ tokenExpired, isAuthenticating }: SteveQueueProps) 
         showError('Something went wrong, please try again');
       }
 
+      log((error as Error).message);
       showError((error as Error).message);
       success = false;
     }
@@ -49,7 +51,7 @@ export const SteveQueue = ({ tokenExpired, isAuthenticating }: SteveQueueProps) 
   };
 
   useEffect(() => {
-    if (!requestedSong) {
+    if (!requestedSong || isAuthenticating) {
       return;
     }
 

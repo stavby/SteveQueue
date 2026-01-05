@@ -6,7 +6,7 @@ import { getToken } from '../../code/apiUtils/Authentication';
 
 export const Main = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const { tokenExpired, isAuthenticating, authenticate } = useAuthentication();
+  const { tokenExpired, isAuthenticating, authenticate, isRefreshing } = useAuthentication();
 
   useEffect(() => {
     getToken().then((tokenResult) => setIsLoggedIn(Boolean(tokenResult)));
@@ -15,14 +15,9 @@ export const Main = () => {
   return (
     <>
       {isAuthenticating && (
-        <AuthWebView
-          onTokenResult={authenticate}
-          isAuthenticating={isAuthenticating}
-          setIsLoggedIn={setIsLoggedIn}
-          isLoggedIn={isLoggedIn}
-        />
+        <AuthWebView onCodeResult={authenticate} setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
       )}
-      {isLoggedIn && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating} />}
+      {isLoggedIn && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating || isRefreshing} />}
     </>
   );
 };
