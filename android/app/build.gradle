@@ -79,8 +79,8 @@ android {
         applicationId "com.stav.steveQueue"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 12
-        versionName "1.0.12"
+        versionCode 13
+        versionName "1.0.13"
     }
     signingConfigs {
         debug {
