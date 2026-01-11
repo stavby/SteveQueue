@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Snackbar from 'react-native-snackbar';
-import WebView from 'react-native-webview';
+import { WebView } from 'react-native-webview';
 import { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes';
 import BackIcon from '../../assets/back.svg';
 import { CLIENT_ID, generateCodeChallenge, generateCodeVerifier } from '../../code/apiUtils/Authentication';
@@ -20,36 +20,40 @@ const getSpotifyAuthUrl = (codeVerifier: string) =>
   `${SPOTIFY_AUTH_URL}&code_challenge=${generateCodeChallenge(codeVerifier)}&code_challenge_method=S256`;
 
 interface AuthWebViewPros {
-  onCodeResult: (code: string, codeVerifier: string) => void;
+  onCodeResult: (code: string, codeVerifier: string) => Promise<void>;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   isLoggedIn: boolean;
 }
 
 export const AuthWebView = ({ onCodeResult, setIsLoggedIn, isLoggedIn }: AuthWebViewPros) => {
   const webView = useRef<WebView>(null);
-  const codeVerifier = useMemo(() => generateCodeVerifier(), []);
-  const [url, setUrl] = useState(getSpotifyAuthUrl(codeVerifier));
   const [isLoading, setIsLoading] = useState(true);
+  const [usedCodes, setUsedCodes] = useState<string[]>([]); // To prevent reusing codes
+  const codeVerifier = useMemo(() => generateCodeVerifier(), [usedCodes]);
+  const [url, setUrl] = useState(getSpotifyAuthUrl(codeVerifier));
   const isLoggingIn = useMemo(() => new RegExp(`^${ACCOUNTS_API_URL}\/[a-z]{2}\/authorize`).test(url), [url]);
 
   useEffect(() => {
-    if (isLoggingIn) {
+    if (isLoggingIn && isLoggedIn) {
       setIsLoggedIn(false);
     }
   }, [isLoggingIn]);
 
-  const handleLoad = (syntheticEvent: WebViewNavigationEvent) => {
-    const { nativeEvent } = syntheticEvent;
+  const handleLoad = async (navState: WebViewNavigationEvent['nativeEvent']) => {
+    const { url: currentUrl, loading: isWebviewLoading } = navState;
 
-    setUrl(nativeEvent.url);
-    const url = new URL(nativeEvent.url);
-    if (url.origin === REDIRECT_URL) {
+    if (url !== currentUrl) {
+      setUrl(currentUrl);
+    }
+
+    const currentUrlParsed = new URL(currentUrl);
+    if (currentUrlParsed.origin === REDIRECT_URL) {
       setIsLoading(true);
-      const codeResult = url.searchParams.get('code');
+      const codeResult = currentUrlParsed.searchParams.get('code');
 
       if (!codeResult) {
-        log('Authentication code was not returned: ' + nativeEvent.url);
-        setUrl(SPOTIFY_AUTH_URL);
+        log('Authentication code was not returned: ' + currentUrl);
+        setUrl(getSpotifyAuthUrl(codeVerifier));
         Snackbar.show({
           text: 'Something went wrong, please try again :(',
           duration: Snackbar.LENGTH_LONG,
@@ -57,12 +61,27 @@ export const AuthWebView = ({ onCodeResult, setIsLoggedIn, isLoggedIn }: AuthWeb
         });
         return;
       }
+      if (usedCodes.includes(codeResult || '')) {
+        return;
+      }
+
+      setUsedCodes((prev) => [...prev, codeResult || '']);
+      try {
+        await onCodeResult(codeResult, codeVerifier);
+        setIsLoggedIn(true);
+      } catch (error) {
+        log('Error during authentication: ' + error);
+        setUrl(getSpotifyAuthUrl(codeVerifier));
+        Snackbar.show({
+          text: 'Something went wrong during authentication, please try again :(',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+        });
+      }
 
       setIsLoading(false);
-      setIsLoggedIn(true);
-      onCodeResult(codeResult, codeVerifier);
     } else {
-      setIsLoading(nativeEvent.loading);
+      setIsLoading(isWebviewLoading);
     }
   };
 
@@ -76,7 +95,7 @@ export const AuthWebView = ({ onCodeResult, setIsLoggedIn, isLoggedIn }: AuthWeb
             color='black'
             onPress={() => {
               setIsLoading(true);
-              setUrl(SPOTIFY_AUTH_URL);
+              setUrl(getSpotifyAuthUrl(codeVerifier));
             }}
             width={SIDE_ICON_SIZE}
             height={SIDE_ICON_SIZE}
@@ -86,7 +105,7 @@ export const AuthWebView = ({ onCodeResult, setIsLoggedIn, isLoggedIn }: AuthWeb
       </View>
       <WebView
         source={{ uri: url }}
-        onLoad={handleLoad}
+        onNavigationStateChange={handleLoad}
         userAgent='Mozilla/5.0 (Linux; Android 10; SM-A205U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36'
         style={{ display: isLoading ? 'none' : 'flex' }}
         ref={webView}
@@ -126,15 +145,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#777777',
   },
 });
-
-const hashToObject = (hash: string) =>
-  hash
-    .substring(1)
-    .split('&')
-    .reduce(
-      (object, item) => ({
-        ...object,
-        [item.substring(0, item.indexOf('='))]: item.substring(item.indexOf('=') + 1),
-      }),
-      {},
-    );

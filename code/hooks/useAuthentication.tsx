@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import Snackbar from 'react-native-snackbar';
 import { TokenResult } from '../../types';
@@ -13,7 +13,7 @@ export const useAuthentication = () => {
   useEffect(() => {
     (async () => {
       if (!(await getIsTokenUpToDate())) {
-        tokenExpired();
+        tokenExpired(true);
       }
     })();
   }, []);
@@ -44,30 +44,47 @@ export const useAuthentication = () => {
     setIsAuthenticating(false);
   };
 
-  const tokenExpired = async () => {
-    console.log('TOKEN EXPIRED CALLED');
+  const tokenExpired = async (isFirstTime?: boolean) => {
+    console.log(`TOKEN EXPIRED CALLED - isFirstTime: ${isFirstTime}`);
     const refreshToken = await getRefreshToken();
     if (!refreshToken) {
+      !isFirstTime &&
+        Snackbar.show({
+          text: 'You were logged out of Spotify, please log in again.',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+        });
       console.log('no refresh token, authenticating...');
       setIsAuthenticating(true);
       return;
     }
 
     setIsRefreshing(true);
-    const tokenResult = await axios.post<TokenResult>(
-      `${ACCOUNTS_API_URL}/api/token`,
-      new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        client_id: CLIENT_ID,
-      }),
-    );
+    try {
+      const tokenResult = await axios.post<TokenResult>(
+        `${ACCOUNTS_API_URL}/api/token`,
+        new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          client_id: CLIENT_ID,
+        }),
+      );
 
-    if (!tokenResult.data || !tokenResult.data.access_token) {
-      log('Refresh token failed: ' + JSON.stringify(tokenResult.data));
-      setIsAuthenticating(true);
-    } else {
+      if (!tokenResult.data || !tokenResult.data.access_token) {
+        throw new Error('Refresh token failed: ' + JSON.stringify(tokenResult.data));
+      }
+
       await updateToken(tokenResult.data);
+    } catch (error) {
+      log(
+        `Error refreshing token: ${(error as Error).message}${axios.isAxiosError(error) ? `\n${JSON.stringify((error as AxiosError).response?.data)}` : ''}`,
+      );
+      Snackbar.show({
+        text: 'You were logged out of Spotify, please log in again.',
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+      setIsAuthenticating(true);
     }
 
     setIsRefreshing(false);
