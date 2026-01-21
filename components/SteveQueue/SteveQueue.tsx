@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { Switch } from 'react-native-switch';
 import { getIsTokenUpToDate } from '../../code/apiUtils/Authentication';
@@ -61,7 +61,12 @@ export const SteveQueue = ({ tokenExpired, isAuthenticating }: SteveQueueProps) 
   const toggleIsPlayNext = () => setIsPlayNext(!isPlayNext);
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : -30} // 50 is Button height
+      enabled
+      style={styles.container}
+    >
       <LoadingAnimation isLoading={Boolean(requestedSong)} text='Loading ... :)' />
       <View style={styles.playNextSwitch}>
         <Text style={styles.playNextText}>Play next?</Text>
@@ -84,7 +89,7 @@ export const SteveQueue = ({ tokenExpired, isAuthenticating }: SteveQueueProps) 
       <View style={styles.searchBar}>
         <CustomSearchBar handleSearch={setRequestedSong} />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -140,6 +145,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     position: 'absolute',
-    bottom: 35,
+    bottom: 0,
+    marginVertical: 20,
   },
 });

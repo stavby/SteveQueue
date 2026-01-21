@@ -3,6 +3,7 @@ import { useAuthentication } from '../../code/hooks/useAuthentication';
 import { AuthWebView } from '../AuthWebView/AuthWebView';
 import { SteveQueue } from '../SteveQueue/SteveQueue';
 import { getToken } from '../../code/apiUtils/Authentication';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const Main = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -13,11 +14,11 @@ export const Main = () => {
   }, []);
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       {isAuthenticating && (
         <AuthWebView onCodeResult={authenticate} setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
       )}
       {isLoggedIn && <SteveQueue tokenExpired={tokenExpired} isAuthenticating={isAuthenticating || isRefreshing} />}
-    </>
+    </SafeAreaView>
   );
 };
