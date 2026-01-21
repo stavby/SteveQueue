@@ -1,3 +1,14 @@
+// Custom code to load environment variables from ../.env file
+def envFile = rootProject.file("../.env")
+if (envFile.exists()) {
+    envFile.eachLine { line ->
+        if (line && !line.startsWith("#") && line.contains("=")) {
+            def (key, value) = line.split("=", 2)
+            System.setProperty(key, value)
+        }
+    }
+}
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -82,8 +93,8 @@ android {
         applicationId "com.stav.steveQueue"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
-        versionName "1.0.15"
+        versionCode 16
+        versionName "1.0.16"
     }
     signingConfigs {
         debug {
@@ -93,12 +104,10 @@ android {
             keyPassword 'android'
         }
         release {
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(MYAPP_UPLOAD_STORE_FILE)
-                storePassword MYAPP_UPLOAD_STORE_PASSWORD
-                keyAlias MYAPP_UPLOAD_KEY_ALIAS
-                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
-            }
+            storeFile file(System.getProperty("GRADLE_KEYSTORE"))
+            storePassword System.getProperty("GRADLE_KEYSTORE_PASSWORD")
+            keyAlias System.getProperty("GRADLE_KEYSTORE_ALIAS")
+            keyPassword System.getProperty("GRADLE_KEYSTORE_ALIAS_PASSWORD")
         }
     }
     buildTypes {
