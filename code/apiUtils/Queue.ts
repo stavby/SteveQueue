@@ -38,15 +38,29 @@ export const addSongToQueue = async (uri: string) => {
   So we assume that the specifed song as the last in the (actual) queue, and then move it to front!
 */
 export const moveSongToFront = async (songUri: string) => {
-  const queue = await getQueue();
+  let queue = await getQueue();
+
   const currentTrackState = await getCurrentTrackState();
 
-  const songIndex = queue.queue.findIndex((song) => song.uri === songUri);
-  const songInQueue = queue.queue.find((song) => song.uri === songUri);
+  let songInQueue = queue.queue.find((song) => song.uri === songUri);
+  let retries = 3;
+  while (!songInQueue && retries > 0) {
+    log(`Song not found in queue, retrying to get queue again... (${retries} retries left)`, 'warn');
+    // sometimes Spotify's API lags and the song is not yet in the queue right after adding it
+    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    queue = await getQueue();
+    songInQueue = queue.queue.find((song) => song.uri === songUri);
+    retries--;
+  }
+
   if (!songInQueue) {
-    console.error('Song was not found in queue after addition');
+    log(
+      `Song was not found in queue after addition -\nWanted song: ${songUri}\nCurrent queue: ${JSON.stringify(queue.queue)}`,
+    );
     throw new Error('Something went wrong, please try again.');
   }
+
+  const songIndex = queue.queue.findIndex((song) => song.uri === songUri);
   const queueUntilSong = [currentTrackState.item, songInQueue, ...queue.queue.slice(0, songIndex)];
   if (queueUntilSong.length === 2) {
     return;
